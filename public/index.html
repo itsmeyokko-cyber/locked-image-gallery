@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Private Gallery</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="auth-page">
+  <main class="auth-card">
+    <div class="auth-copy">
+      <div class="eyebrow">PRIVATE GALLERY</div>
+      <h1>Enter password</h1>
+      <p>Type the password to view the image gallery.</p>
+    </div>
+
+    <form id="loginForm" class="login-form">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password"
+             inputmode="numeric" autocomplete="current-password"
+             placeholder="••••" maxlength="64" required>
+      <button type="submit">Unlock gallery</button>
+      <p id="loginMessage" class="message" aria-live="polite"></p>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const input = document.getElementById("password");
+    const message = document.getElementById("loginMessage");
+
+    fetch("/api/session").then(r => r.json()).then(data => {
+      if (data.authenticated) location.href = "/gallery.html";
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      message.textContent = "Checking…";
+
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ password: input.value })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        location.href = "/gallery.html";
+      } else {
+        message.textContent = data.error || "Incorrect password.";
+        input.select();
+      }
+    });
+  </script>
+</body>
+</html>
