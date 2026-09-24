@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>My Images & Videos</title>
+<link rel="stylesheet" href="style.css">
+<style>
+#gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;padding:12px}.media-card{background:#111;border-radius:10px;overflow:hidden}.media-card img,.media-card video{display:block;width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer}.media-name{padding:8px;font-size:12px;word-break:break-all}.viewer{display:none;position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:999;align-items:center;justify-content:center;padding:20px}.viewer.open{display:flex}.viewer img,.viewer video{max-width:95vw;max-height:90vh}.close{position:absolute;right:18px;top:10px;font-size:32px;background:none;border:0;color:#fff;cursor:pointer}
+</style></head>
+<body>
+<header><h1>My Images & Videos</h1><button onclick="location.href='index.html'">Lock</button> <button onclick="location.href='admin.html'">Manage</button></header>
+<main id="gallery"><p>Loading…</p></main>
+<div id="viewer" class="viewer"><button class="close" onclick="closeViewer()">×</button><div id="viewerContent"></div></div>
+<script>
+const videoExt=/\.(mp4|webm|mov|m4v|ogv)$/i;
+const imageExt=/\.(jpg|jpeg|png|gif|webp|bmp|avif)$/i;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function render(items){const g=document.getElementById('gallery');g.innerHTML='';if(!items.length){g.innerHTML='<p>No media found.</p>';return}items.forEach(x=>{let n=x.name||'',t=x.type||(videoExt.test(n)?'video':'image'),src=(t==='video'?'videos/':'images/')+encodeURIComponent(n),c=document.createElement('div');c.className='media-card';c.innerHTML=t==='video'?`<video src="${src}" muted preload="metadata" playsinline></video><div class="media-name">▶ ${esc(n)}</div>`:`<img src="${src}" loading="lazy" alt="${esc(n)}"><div class="media-name">${esc(n)}</div>`;c.querySelector(t==='video'?'video':'img').onclick=()=>openViewer(t,src);g.appendChild(c)})}
+async function load(){try{let r=await fetch('media.json?'+Date.now());if(r.ok){let d=await r.json();render(d);return}}catch(e){}try{let r=await fetch('images.json?'+Date.now());let d=await r.json();render((d||[]).map(x=>({name:x.name,type:'image'})))}catch(e){render([])}}
+function openViewer(t,s){let v=document.getElementById('viewer'),c=document.getElementById('viewerContent');c.innerHTML=t==='video'?`<video src="${s}" controls autoplay playsinline></video>`:`<img src="${s}" alt="">`;v.classList.add('open')}
+function closeViewer(){document.getElementById('viewer').classList.remove('open');document.getElementById('viewerContent').innerHTML=''}
+load();
+</script></body></html>

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Private Gallery</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body class="auth-page">
+  <main class="auth-card">
+    <div class="auth-copy">
+      <div class="eyebrow">PRIVATE GALLERY</div>
+      <h1>Enter password</h1>
+      <p>Type the password to view the image gallery.</p>
+    </div>
+    <form id="loginForm" class="login-form">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••" maxlength="64" required autofocus>
+      <button type="submit">Unlock gallery</button>
+      <p id="loginMessage" class="message" aria-live="polite"></p>
+    </form>
+  </main>
+<script>
+const REAL_PASSWORD_HASH = "d5153a8e6fa6caad01f67479b366b5d9f3b6350e594dd3f8776d4edb7a2a889c";
+
+async function sha256(value) {
+  const data = new TextEncoder().encode(value);
+  const hash = await crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+if (sessionStorage.getItem("galleryUnlocked") === "1") location.href = "./gallery.html";
+
+document.getElementById("loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const message = document.getElementById("loginMessage");
+  message.textContent = "Checking…";
+  const hash = await sha256(document.getElementById("password").value);
+  if (hash === REAL_PASSWORD_HASH) {
+    sessionStorage.setItem("galleryUnlocked", "1");
+    location.href = "./gallery.html";
+  } else {
+    message.textContent = "Incorrect password.";
+    document.getElementById("password").select();
+  }
+});
+</script>
+</body>
+</html>
